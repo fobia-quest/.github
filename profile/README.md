@@ -63,21 +63,35 @@
   "uptime_sec": 142
 }
 
-2. Команды управления с пульта оператора
+### 2. Команды управления с пульта оператора
+
 Принудительное открытие тайника:
+```json
 {"target":"Monster_Eyes_Lock","cmd":"FORCE_OPEN"}
+```
 
 Принудительное закрытие замка:
+```json
 {"target":"Monster_Eyes_Lock","cmd":"FORCE_CLOSE"}
+```
 
-Входящий звонок на телефон игрокам:
-{"target":"esp32-quest-phone","cmd":"TRIGGER_RING","track":1}
+Входящий звонок на телефон игрокам (по умолчанию трек квеста, либо указанный трек):
+```json
+{"target":"esp32-quest-phone","cmd":"TRIGGER_RING","track":5}
+```
 
-Глобальный сброс сценария комнаты:
+Глобальный сброс сценария комнаты (или конкретного устройства):
+```json
 {"target":"ALL","cmd":"RESET"}
+```
 
-🛠️ Разработка нового устройства через SDK
+---
 
+## 🛠️ Разработка нового устройства через SDK
+
+Подключение нового реквизита сводится к использованию библиотеки **`fobia-device-sdk`**:
+
+```cpp
 #include <Arduino.h>
 #include "FobiaDevice.h"
 
@@ -86,10 +100,12 @@ FobiaDevice puzzle("New_Puzzle");
 void setup() {
   Serial.begin(115200);
 
+  // Кастомные поля для телеметрии
   puzzle.onTelemetry([](JsonObject& data) {
     data["solved"] = false;
   });
 
+  // Обработчик входящих команд
   puzzle.onCommand([](const String& cmd, JsonObject& payload) {
     if (cmd == "FORCE_OPEN") {
       // Логика аварийного открытия
@@ -100,5 +116,6 @@ void setup() {
 }
 
 void loop() {
-  puzzle.update();
+  puzzle.update(); // Обязательный вызов в loop без delay!
 }
+```
